@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export function ChairComponent() {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [chairColor, setChairColor] = useState("#ff0000");
+  const modelRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -44,6 +46,7 @@ export function ChairComponent() {
     loader.load(
       "/vitra_eames_plastic_chair.glb",
       (gltf) => {
+        modelRef.current = gltf.scene;
         scene.add(gltf.scene);
 
         // Center the model
@@ -55,12 +58,28 @@ export function ChairComponent() {
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
         camera.position.z = maxDim * 2;
+
+        // Apply initial color
+        updateChairColor(chairColor);
       },
       undefined,
       (error) => {
         console.error("Error loading model:", error);
       }
     );
+
+    // Function to update chair color
+    const updateChairColor = (color: string) => {
+      if (!modelRef.current) return;
+
+      modelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.color.set(color);
+          }
+        }
+      });
+    };
 
     // Animation loop
     const animate = () => {
@@ -86,5 +105,37 @@ export function ChairComponent() {
     };
   }, []);
 
-  return <div ref={mountRef} style={{ width: "100%", height: "100vh" }} />;
+  // Update color when chairColor state changes
+  useEffect(() => {
+    if (modelRef.current) {
+      modelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.color.set(chairColor);
+          }
+        }
+      });
+    }
+  }, [chairColor]);
+
+  return (
+    <div>
+      <div ref={mountRef} style={{ width: "100%", height: "100vh" }} />
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          left: "20px",
+          zIndex: 1000,
+        }}
+      >
+        <input
+          type="color"
+          value={chairColor}
+          onChange={(e) => setChairColor(e.target.value)}
+          style={{ width: "50px", height: "50px" }}
+        />
+      </div>
+    </div>
+  );
 }
