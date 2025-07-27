@@ -24,9 +24,23 @@ const HelloWorld = () => {
     toast.success(data.message);
   };
 
+  const handleSubmit = async () => {
+    const response = await fetch("/api/gemini", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ingredients: ["卵", "トマト", "牛乳"],
+      }),
+    });
+
+    const data = await response.json();
+    console.log("レシピ:", data.recipe);
+  };
+
   return (
     <div>
-      <Button size="lg" onClick={handleClick}>
+      <input type="text" />
+      <Button size="lg" onClick={handleSubmit}>
         Hello World
       </Button>
     </div>
