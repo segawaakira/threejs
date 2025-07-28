@@ -15,7 +15,7 @@ const CreateUser = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: "example@example.com",
+        email: "example+2@example.com",
         password: "example",
       }),
     });
