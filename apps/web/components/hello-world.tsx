@@ -2,13 +2,32 @@
 
 import { Button } from "@repo/ui/components/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
 const HelloWorld = () => {
   const { toast } = useToast();
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [recipe, setRecipe] = useState<string>("");
+
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3001/ingredient-sets?userId=1"
+        );
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setIngredients(data[0].ingredients);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ingredients:", error);
+      }
+    };
+
+    fetchIngredients();
+  }, []);
+
   // Simplicity - Just a simple button to get the hello world message
   const handleClick = async () => {
     const response = await fetch("http://localhost:3001/", {
@@ -54,6 +73,20 @@ const HelloWorld = () => {
     console.log("✅ 送信結果:", data);
   };
 
+  const handleUpdate = async () => {
+    const response = await fetch("http://localhost:3001/ingredient-sets/1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: 1,
+        ingredients: ingredients,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("✅ 送信結果:", data);
+  };
+
   return (
     <div>
       <input
@@ -66,6 +99,9 @@ const HelloWorld = () => {
       </Button>
       <Button size="lg" onClick={handleCreate}>
         Create
+      </Button>
+      <Button size="lg" onClick={handleUpdate}>
+        Update
       </Button>
       <ReactMarkdown>{recipe}</ReactMarkdown>
     </div>
