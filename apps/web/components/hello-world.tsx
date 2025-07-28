@@ -40,6 +40,20 @@ const HelloWorld = () => {
     setRecipe(data.recipe);
   };
 
+  const handleCreate = async () => {
+    const response = await fetch("http://localhost:3001/ingredient-sets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: 1,
+        ingredients: ingredients,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("✅ 送信結果:", data);
+  };
+
   return (
     <div>
       <input
@@ -49,6 +63,9 @@ const HelloWorld = () => {
       />
       <Button size="lg" onClick={handleSubmit}>
         Hello World
+      </Button>
+      <Button size="lg" onClick={handleCreate}>
+        Create
       </Button>
       <ReactMarkdown>{recipe}</ReactMarkdown>
     </div>
