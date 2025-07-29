@@ -20,8 +20,10 @@ export class IngredientsService {
   }
 
   async updateIngredientSet(id: number, dto: UpdateIngredientDto) {
+    console.log(' =======id======');
+    console.log(id);
     return this.prisma.ingredientSet.update({
-      where: { id },
+      where: { userId: id },
       data: {
         ingredients: dto.ingredients,
       },

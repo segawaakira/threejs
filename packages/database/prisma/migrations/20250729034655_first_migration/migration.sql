@@ -8,5 +8,8 @@ CREATE TABLE "IngredientSet" (
     CONSTRAINT "IngredientSet_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateIndex
+CREATE UNIQUE INDEX "IngredientSet_userId_key" ON "IngredientSet"("userId");
+
 -- AddForeignKey
 ALTER TABLE "IngredientSet" ADD CONSTRAINT "IngredientSet_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

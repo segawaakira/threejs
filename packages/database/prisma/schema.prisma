@@ -19,6 +19,6 @@ model IngredientSet {
   id         Int      @id @default(autoincrement())
   ingredients String[]
   createdAt  DateTime @default(now())
-  userId     Int
+  userId     Int      @unique
   user       User     @relation(fields: [userId], references: [id])
 }

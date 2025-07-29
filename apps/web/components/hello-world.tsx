@@ -4,17 +4,20 @@ import { Button } from "@repo/ui/components/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { useSession } from "next-auth/react";
 
 const HelloWorld = () => {
+  const { data: session, status } = useSession();
   const { toast } = useToast();
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [recipe, setRecipe] = useState<string>("");
 
   useEffect(() => {
+    if (!session?.user?.id) return;
     const fetchIngredients = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/ingredient-sets?userId=1"
+          `http://localhost:3001/ingredient-sets?userId=${session?.user?.id}`
         );
         const data = await response.json();
         if (data && data.length > 0) {
@@ -26,7 +29,7 @@ const HelloWorld = () => {
     };
 
     fetchIngredients();
-  }, []);
+  }, [session?.user?.id]);
 
   // Simplicity - Just a simple button to get the hello world message
   const handleClick = async () => {
@@ -64,7 +67,7 @@ const HelloWorld = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: 1,
+        userId: session?.user?.id,
         ingredients: ingredients,
       }),
     });
@@ -74,14 +77,17 @@ const HelloWorld = () => {
   };
 
   const handleUpdate = async () => {
-    const response = await fetch("http://localhost:3001/ingredient-sets/1", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: 1,
-        ingredients: ingredients,
-      }),
-    });
+    const response = await fetch(
+      `http://localhost:3001/ingredient-sets/${session?.user?.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // userId: 6,
+          ingredients: ingredients,
+        }),
+      }
+    );
 
     const data = await response.json();
     console.log("✅ 送信結果:", data);
