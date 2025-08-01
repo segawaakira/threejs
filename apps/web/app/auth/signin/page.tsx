@@ -2,6 +2,8 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@repo/ui/components/button";
+import { Input } from "@repo/ui/components/input";
 
 export default function SignIn() {
   const router = useRouter();
@@ -32,14 +34,14 @@ export default function SignIn() {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Email</label>
-          <input type="email" name="email" required />
+          <Input type="email" name="email" required />
         </div>
         <div>
           <label>Password</label>
-          <input type="password" name="password" required />
+          <Input type="password" name="password" required />
         </div>
         {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Sign In</button>
+        <Button type="submit">Sign In</Button>
       </form>
     </div>
   );

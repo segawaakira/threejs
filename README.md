@@ -89,3 +89,17 @@ Run the development servers for all applications simultaneously:
 ```bash
 pnpm turbo dev
 ```
+
+---
+
+## 6. shadcnパーツ追加
+
+例）inputの場合
+
+```bash
+cd packages/ui
+pnpm dlx shadcn@latest add input
+```
+
+参考）
+https://ui.shadcn.com/docs/components
