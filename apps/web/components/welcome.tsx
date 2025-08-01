@@ -2,7 +2,6 @@
 
 import HelloWorld from "@/components/hello-world";
 import Image from "next/image";
-import CreateUser from "@/components/create-user";
 import ListUsers from "@/components/list-users";
 
 export function Welcome() {
@@ -72,7 +71,6 @@ export function Welcome() {
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <HelloWorld />
-        <CreateUser />
         <ListUsers />
       </div>
     </div>
