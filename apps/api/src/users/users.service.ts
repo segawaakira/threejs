@@ -35,4 +35,24 @@ export class UsersService {
 
     return users;
   }
+
+  async deleteUser(id: number) {
+    // ユーザーが存在するかチェック
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { ingredientSets: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // 関連データ（IngredientSet）も含めて削除
+    await this.prisma.user.delete({
+      where: { id },
+      include: { ingredientSets: true },
+    });
+
+    return { message: 'User and associated data deleted successfully' };
+  }
 }

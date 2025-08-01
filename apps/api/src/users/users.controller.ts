@@ -5,6 +5,7 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 
@@ -33,5 +34,10 @@ export class UsersController {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
     return user;
+  }
+
+  @Delete()
+  deleteUser(@Body() body: { id: number }) {
+    return this.usersService.deleteUser(body.id);
   }
 }
