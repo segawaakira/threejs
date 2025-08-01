@@ -4,7 +4,7 @@ import { Button } from "@repo/ui/components/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 const HelloWorld = () => {
   const { data: session, status } = useSession();
@@ -102,6 +102,9 @@ const HelloWorld = () => {
       />
       <Button size="lg" onClick={handleSubmit}>
         Hello World
+      </Button>
+      <Button size="lg" onClick={() => signOut()}>
+        Sign Out
       </Button>
       <Button size="lg" onClick={handleCreate}>
         Create
