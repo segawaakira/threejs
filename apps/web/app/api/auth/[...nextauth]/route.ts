@@ -1,7 +1,7 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-export const authOptions: NextAuthOptions = {
+const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -34,18 +34,18 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin", // カスタムログインページ
   },
   session: {
-    strategy: "jwt", // JWTでセッション管理
+    strategy: "jwt" as const, // JWTでセッション管理
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key-for-development",
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       session.user.id = token.id;
       session.user.email = token.email;
       return session;

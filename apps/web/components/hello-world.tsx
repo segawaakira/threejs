@@ -1,14 +1,12 @@
 "use client";
 
 import { Button } from "@repo/ui/components/button";
-import { useToast } from "@repo/ui/hooks/use-toast";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useSession, signOut } from "next-auth/react";
 
 const HelloWorld = () => {
-  const { data: session, status } = useSession();
-  const { toast } = useToast();
+  const { data: session } = useSession();
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [recipe, setRecipe] = useState<string>("");
 

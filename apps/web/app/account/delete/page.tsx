@@ -1,15 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import { Button } from "@repo/ui/components/button";
 import { useToast } from "@repo/ui/hooks/use-toast";
 import { useSession, signOut } from "next-auth/react";
 
-export default function SignUp() {
-  const { data: session, status } = useSession();
+export default function DeleteAccount() {
+  const { data: session } = useSession();
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleDelete = async () => {
     if (!session?.user?.id) {
@@ -42,7 +39,7 @@ export default function SignUp() {
       return;
     }
 
-    const data = await response.json();
+    await response.json();
     toast.success("Account deleted successfully", {
       description: "Your account has been permanently deleted",
     });
