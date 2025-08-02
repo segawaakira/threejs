@@ -1,7 +1,7 @@
+@source "../../node_modules/@repo/ui";
+
 @import "tailwindcss";
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../components/**/*.{ts,tsx}";
-@source "../**/*.{ts,tsx}";
+@import "@repo/ui/styles/globals.css";
 
 @import "tw-animate-css";
 
