@@ -5,6 +5,8 @@ import { ThemeProvider } from "@repo/ui/providers/theme-provider";
 import { Toaster } from "@repo/ui/components/sonner";
 import { AppProviders } from "./providers";
 
+import "./globals.css";
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
