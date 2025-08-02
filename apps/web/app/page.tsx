@@ -3,7 +3,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { Welcome } from "@/components/welcome";
 import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
