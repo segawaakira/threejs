@@ -11,6 +11,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { z } from 'zod';
+import { ZodDto } from 'nestjs-zod';
+import { CreateUserInput } from '@repo/api-schema';
 
 // Simplicity - Just a simple controller to create and list users
 @Controller('users')
@@ -23,8 +26,9 @@ export class UsersController {
   }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createUser(@Body() user: CreateUserDto) {
+  async createUser(
+    @Body(ZodDto(CreateUserInput)) user: z.infer<typeof CreateUserInput>,
+  ) {
     try {
       return await this.usersService.createUser(user.email, user.password);
     } catch (error) {
