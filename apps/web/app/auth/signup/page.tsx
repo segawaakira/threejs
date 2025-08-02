@@ -14,30 +14,50 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
 
   const handleSignup = async () => {
-    const response = await fetch("http://localhost:3001/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-
-    if (!response.ok) {
-      toast.error("Failed to create user");
-      console.log(response);
+    // パスワードのバリデーション
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters long");
       return;
     }
 
-    const data = await response.json();
-    toast.success("User created successfully", {
-      description: `Email: ${data.email}`,
-    });
+    if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
+      toast.error("Password must contain both letters and numbers");
+      return;
+    }
 
-    // 成功したらサインインページにリダイレクト
-    router.push("/auth/signin");
+    try {
+      const response = await fetch("http://localhost:3001/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Response status:", response.status);
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        toast.error("Failed to create user", {
+          description: data.message || "Unknown error occurred",
+        });
+        return;
+      }
+
+      toast.success("User created successfully", {
+        description: `Email: ${data.email}`,
+      });
+
+      // 成功したらサインインページにリダイレクト
+      router.push("/auth/signin");
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error("Network error occurred");
+    }
   };
 
   return (

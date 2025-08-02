@@ -18,12 +18,26 @@ export class UsersService {
   }
 
   async createUser(email: string, password: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword },
-    });
+    try {
+      // 既存のユーザーをチェック
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
 
-    return user;
+      if (existingUser) {
+        throw new Error('User with this email already exists');
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await this.prisma.user.create({
+        data: { email, password: hashedPassword },
+      });
+
+      return user;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
 
   async listUsers() {

@@ -31,24 +31,6 @@ const HelloWorld = () => {
     fetchIngredients();
   }, [session?.user?.id]);
 
-  // Simplicity - Just a simple button to get the hello world message
-  const handleClick = async () => {
-    const response = await fetch("http://localhost:3001/", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      toast.error("Failed to connect to the backend");
-      console.log(response);
-    }
-
-    const data = await response.json();
-    toast.success(data.message);
-  };
-
   const handleSubmit = async () => {
     const response = await fetch("/api/gemini", {
       method: "POST",
