@@ -9,7 +9,7 @@ const ListUsers = () => {
 
   // Simplicity - Just a simple button to list users
   const handleClick = async () => {
-    const response = await fetch("http://localhost:3001/users", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

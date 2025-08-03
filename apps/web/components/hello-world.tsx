@@ -15,7 +15,7 @@ const HelloWorld = () => {
     const fetchIngredients = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/ingredient-sets?userId=${session?.user?.id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/ingredient-sets?userId=${session?.user?.id}`
         );
         const data = await response.json();
         if (data && data.length > 0) {
@@ -43,14 +43,17 @@ const HelloWorld = () => {
   };
 
   const handleCreate = async () => {
-    const response = await fetch("http://localhost:3001/ingredient-sets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: session?.user?.id,
-        ingredients: ingredients,
-      }),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/ingredient-sets`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: session?.user?.id,
+          ingredients: ingredients,
+        }),
+      }
+    );
 
     const data = await response.json();
     console.log("✅ 送信結果:", data);
@@ -58,7 +61,7 @@ const HelloWorld = () => {
 
   const handleUpdate = async () => {
     const response = await fetch(
-      `http://localhost:3001/ingredient-sets/${session?.user?.id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/ingredient-sets/${session?.user?.id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
