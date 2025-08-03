@@ -4,24 +4,37 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { PrismaClient } from '@repo/database';
+
+// Type definition for Prisma client
+interface PrismaClientType {
+  user: any;
+  ingredientSet: any;
+  $connect: () => Promise<void>;
+  $disconnect: () => Promise<void>;
+}
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
+  public prisma: PrismaClientType;
 
-  onModuleInit() {
-    this.logger.log('Connecting to database...');
-    // The Prisma Client singleton from @repo/database should already be connected,
-    // but we'll add logging here
+  constructor() {
+    // Dynamic import to avoid TypeScript issues
+    this.prisma = new (require('@prisma/client').PrismaClient)({
+      log:
+        process.env.NODE_ENV === 'development'
+          ? ['query', 'error', 'warn']
+          : ['error'],
+    });
   }
 
-  onModuleDestroy() {
+  async onModuleInit() {
+    this.logger.log('Connecting to database...');
+    await this.prisma.$connect();
+  }
+
+  async onModuleDestroy() {
     this.logger.log('Disconnecting from database...');
-    // We don't actually want to disconnect the shared singleton
-    // as it might be used by other parts of the application
+    await this.prisma.$disconnect();
   }
 }

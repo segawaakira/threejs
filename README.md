@@ -1,105 +1,67 @@
-## Structure
+# ThreeJS Project
 
-```
-turbo-nest-prisma/
-├── apps/
-│   ├── api/         # NestJS backend application
-│   └── web/         # Next.js frontend application
-├── packages/
-│   ├── database/    # Prisma schema and client
-│   ├── eslint-config/ # Shared ESLint config
-│   ├── typescript-config/ # Shared TypeScript config
-│   └── ui/          # Shared React components (Shadcn/ui)
-├── pnpm-workspace.yaml
-├── package.json
-└── turbo.json       # Turborepo configuration
-```
+This is a monorepo containing a NestJS API and Next.js web application.
 
----
+## Render Deployment
 
-## Getting Started
+To deploy the API to Render:
 
-### 1. Install Dependencies
+1. **Environment Variables**: Set the following environment variables in Render:
 
-```bash
-pnpm install
-```
+   - `DATABASE_URL`: Your PostgreSQL database URL
+   - `NODE_ENV`: `production`
 
-### 2. Set Up Environment Variables
+2. **Build Command**: The build command is automatically configured in `render.yaml`
 
-Environment variables are crucial for configuring database connections, API endpoints, etc.
+3. **Start Command**: The start command is automatically configured in `render.yaml`
 
-- **Database:**
+## Local Development
 
-  - Create a `.env` file in `packages/database`.
-  - Add your `DATABASE_URL`. Example for PostgreSQL:
-    ```env
-    # packages/database/.env
-    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mydb?schema=public"
-    ```
+### Prerequisites
 
-- **Backend (`apps/api`):**
+- Node.js 18+
+- pnpm
+- PostgreSQL database
 
-  - Create a `.env` file in `apps/api`.
-  - Define the `PORT` for the NestJS server (defaults to 3001 if not set).
-  - You might need to add the `DATABASE_URL` here as well.
-    ```env
-    # apps/api/.env
-    PORT=3001
-    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mydb?schema=public"
-    ```
+### Setup
 
-- **Frontend (`apps/web`):**
+1. Install dependencies:
 
-  - Create a `.env` file in `apps/web`.
-  - Define the URL for your backend API:
-    ```env
-    # apps/web/.env.local
-    NEXT_PUBLIC_API_URL=http://localhost:3001 # Adjust port if changed in apps/api/.env
-    ```
+   ```bash
+   pnpm install
+   ```
 
-### 3. Set Up the Database
+2. Set up environment variables:
 
-- Start the database container:
-  ```bash
-  docker compose up -d
-  ```
+   ```bash
+   cd apps/api
+   cp .env.example .env
+   # Edit .env with your database URL
+   ```
 
-### 4. Run Database Migrations
+3. Generate Prisma client:
 
-Generate the Prisma Client based on your schema.
+   ```bash
+   cd apps/api
+   pnpm prisma generate
+   ```
 
-```bash
-pnpm turbo db:generate
-```
+4. Run database migrations:
 
-Apply the Prisma schema to your database:
+   ```bash
+   cd apps/api
+   pnpm prisma migrate deploy
+   ```
 
-```bash
-# This command reads schema.prisma and applies changes to the database
-pnpm turbo db:migrate
-```
+5. Start the development servers:
+   ```bash
+   pnpm dev
+   ```
 
----
+## Project Structure
 
-## 5. Development
-
-Run the development servers for all applications simultaneously:
-
-```bash
-pnpm turbo dev
-```
-
----
-
-## 6. shadcnパーツ追加
-
-例）inputの場合
-
-```bash
-cd packages/ui
-pnpm dlx shadcn@latest add input
-```
-
-参考）
-https://ui.shadcn.com/docs/components
+- `apps/api`: NestJS API application
+- `apps/web`: Next.js web application
+- `packages/database`: Database package with Prisma schema
+- `packages/api-schema`: API schema definitions
+- `packages/ui`: Shared UI components

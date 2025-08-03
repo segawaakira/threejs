@@ -26,9 +26,7 @@ export class UsersController {
   }
 
   @Post()
-  async createUser(
-    @Body(ZodDto(CreateUserInput)) user: z.infer<typeof CreateUserInput>,
-  ) {
+  async createUser(@Body() user: z.infer<typeof CreateUserInput>) {
     try {
       return await this.usersService.createUser(user.email, user.password);
     } catch (error) {

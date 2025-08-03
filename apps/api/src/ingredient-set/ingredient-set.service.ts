@@ -9,7 +9,7 @@ export class IngredientsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createIngredientSet(dto: CreateIngredientDto) {
-    return this.prisma.ingredientSet.create({
+    return this.prisma.prisma.ingredientSet.create({
       data: {
         ingredients: dto.ingredients,
         user: {
@@ -20,7 +20,7 @@ export class IngredientsService {
   }
 
   async updateIngredientSet(id: number, dto: UpdateIngredientDto) {
-    return this.prisma.ingredientSet.update({
+    return this.prisma.prisma.ingredientSet.update({
       where: { userId: id },
       data: {
         ingredients: dto.ingredients,
@@ -29,7 +29,7 @@ export class IngredientsService {
   }
 
   async getUserIngredientSets(userId: number) {
-    return this.prisma.ingredientSet.findMany({
+    return this.prisma.prisma.ingredientSet.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });

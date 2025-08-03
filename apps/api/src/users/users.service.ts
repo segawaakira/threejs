@@ -8,7 +8,7 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.prisma.user.findUnique({ where: { email } });
     console.log(' =======user========');
     console.log(user);
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -20,7 +20,7 @@ export class UsersService {
   async createUser(email: string, password: string) {
     try {
       // 既存のユーザーをチェック
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.prisma.user.findUnique({
         where: { email },
       });
 
@@ -29,7 +29,7 @@ export class UsersService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await this.prisma.user.create({
+      const user = await this.prisma.prisma.user.create({
         data: { email, password: hashedPassword },
       });
 
@@ -41,7 +41,7 @@ export class UsersService {
   }
 
   async listUsers() {
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.prisma.user.findMany();
 
     if (!users) {
       throw new NotFoundException(`No users found`);
@@ -52,7 +52,7 @@ export class UsersService {
 
   async deleteUser(id: number) {
     // ユーザーが存在するかチェック
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.prisma.user.findUnique({
       where: { id },
       include: { ingredientSets: true },
     });
@@ -62,7 +62,7 @@ export class UsersService {
     }
 
     // 関連データ（IngredientSet）も含めて削除
-    await this.prisma.user.delete({
+    await this.prisma.prisma.user.delete({
       where: { id },
       include: { ingredientSets: true },
     });
