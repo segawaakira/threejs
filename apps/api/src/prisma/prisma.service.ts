@@ -21,7 +21,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   constructor() {
     // Dynamic import to avoid TypeScript issues
     try {
-      const { PrismaClient } = require('@prisma/client');
+      // 正しいパスでPrismaクライアントをインポート
+      const { PrismaClient } = require('../../node_modules/.prisma/client');
       this.prisma = new PrismaClient({
         log:
           process.env.NODE_ENV === 'development'

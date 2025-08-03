@@ -8,6 +8,7 @@ import {
   UsePipes,
   ValidationPipe,
   Delete,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,6 +29,8 @@ const CreateUserInput = z.object({
 // Simplicity - Just a simple controller to create and list users
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
@@ -37,9 +40,23 @@ export class UsersController {
 
   @Post()
   async createUser(@Body() user: z.infer<typeof CreateUserInput>) {
+    this.logger.log(`Creating user with email: ${user.email}`);
+
     try {
-      return await this.usersService.createUser(user.email, user.password);
+      const createdUser = await this.usersService.createUser(
+        user.email,
+        user.password,
+      );
+      this.logger.log(`User created successfully: ${createdUser.id}`);
+
+      // パスワードを除外してレスポンスを返す
+      const { password, ...userWithoutPassword } = createdUser;
+      return userWithoutPassword;
     } catch (error) {
+      this.logger.error(
+        `Error creating user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
       if (
         error instanceof Error &&
         error.message === 'User with this email already exists'

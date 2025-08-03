@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
 // Simplicity - Just a simple service to create and list users
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -18,23 +20,34 @@ export class UsersService {
   }
 
   async createUser(email: string, password: string) {
+    this.logger.log(`Attempting to create user with email: ${email}`);
+
     try {
       // 既存のユーザーをチェック
+      this.logger.log('Checking for existing user...');
       const existingUser = await this.prisma.prisma.user.findUnique({
         where: { email },
       });
 
       if (existingUser) {
+        this.logger.warn(`User with email ${email} already exists`);
         throw new Error('User with this email already exists');
       }
 
+      this.logger.log('Hashing password...');
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      this.logger.log('Creating user in database...');
       const user = await this.prisma.prisma.user.create({
         data: { email, password: hashedPassword },
       });
 
+      this.logger.log(`User created successfully with ID: ${user.id}`);
       return user;
     } catch (error) {
+      this.logger.error(
+        `Error in createUser: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       console.error('Error creating user:', error);
       throw error;
     }

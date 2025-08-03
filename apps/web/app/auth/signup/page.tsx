@@ -12,8 +12,16 @@ export default function SignUp() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = async () => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     // パスワードのバリデーション
     if (password.length < 8) {
       toast.error("Password must be at least 8 characters long");
@@ -25,8 +33,13 @@ export default function SignUp() {
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      // APIエンドポイントを環境変数から取得、デフォルトはローカル
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const response = await fetch(`${apiUrl}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -37,45 +50,69 @@ export default function SignUp() {
         }),
       });
 
-      const data = await response.json();
       console.log("Response status:", response.status);
-      console.log("Response data:", data);
+      console.log("Response headers:", response.headers);
 
-      if (!response.ok) {
-        toast.error("Failed to create user", {
-          description: data.message || "Unknown error occurred",
-        });
+      // レスポンスが空でないかチェック
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+
+      let data;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        toast.error("Invalid response from server");
         return;
       }
 
-      toast.success("User created successfully", {
-        description: `Email: ${data.email}`,
-      });
+      if (!response.ok) {
+        toast.error(data.message || "Failed to create user");
+        return;
+      }
+
+      toast.success("User created successfully");
 
       // 成功したらサインインページにリダイレクト
       router.push("/auth/signin");
     } catch (error) {
       console.error("Signup error:", error);
       toast.error("Network error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSignup}>
-      <Input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="メールアドレス"
-      />
-      <Input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        type="password"
-        placeholder="パスワード"
-      />
-      <Button type="button" onClick={handleSignup}>
-        会員登録
-      </Button>
-    </form>
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
+            Sign up
+          </h2>
+        </div>
+        <form onSubmit={handleSignup} className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="メールアドレス"
+              type="email"
+              required
+            />
+            <Input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              placeholder="パスワード"
+              required
+            />
+          </div>
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? "Creating account..." : "会員登録"}
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 }
