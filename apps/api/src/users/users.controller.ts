@@ -13,7 +13,17 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { z } from 'zod';
 import { ZodDto } from 'nestjs-zod';
-import { CreateUserInput } from '@repo/api-schema';
+
+const CreateUserInput = z.object({
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters long')
+    .regex(
+      /^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,}$/,
+      'Password must contain both letters and numbers',
+    ),
+});
 
 // Simplicity - Just a simple controller to create and list users
 @Controller('users')
