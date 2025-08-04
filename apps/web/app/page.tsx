@@ -22,21 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@repo/ui/components/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/ui/components/tabs";
-import { Label } from "@repo/ui/components/label";
+
 import { User, LogOut, UserX, Heart } from "lucide-react";
 import { Camera, Type } from "lucide-react";
 import { ImageUploadArea } from "components/image-upload-area";
@@ -66,7 +52,6 @@ export default function RecipeApp() {
     avatar: "",
   });
   const [savedRecipes, setSavedRecipes] = useState<string[]>([]);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const addIngredient = () => {
     if (newIngredient.trim() && !ingredients.includes(newIngredient.trim())) {
@@ -207,75 +192,14 @@ export default function RecipeApp() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-              <DialogTrigger asChild>
-                <Button>ログイン</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>アカウント</DialogTitle>
-                  <DialogDescription>
-                    ログインまたは新規登録してレシピを保存しましょう
-                  </DialogDescription>
-                </DialogHeader>
-                <Tabs defaultValue="login" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="login">ログイン</TabsTrigger>
-                    <TabsTrigger value="register">新規登録</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="login" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">メールアドレス</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@example.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">パスワード</Label>
-                      <Input id="password" type="password" />
-                    </div>
-                    <Button
-                      className="w-full"
-                      onClick={() => {
-                        setIsLoggedIn(true);
-                        setShowAuthDialog(false);
-                      }}
-                    >
-                      ログイン
-                    </Button>
-                  </TabsContent>
-                  <TabsContent value="register" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">お名前</Label>
-                      <Input id="name" placeholder="田中太郎" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email-register">メールアドレス</Label>
-                      <Input
-                        id="email-register"
-                        type="email"
-                        placeholder="your@example.com"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password-register">パスワード</Label>
-                      <Input id="password-register" type="password" />
-                    </div>
-                    <Button
-                      className="w-full"
-                      onClick={() => {
-                        setIsLoggedIn(true);
-                        setShowAuthDialog(false);
-                      }}
-                    >
-                      新規登録
-                    </Button>
-                  </TabsContent>
-                </Tabs>
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <a href="/auth/signin">ログイン</a>
+              </Button>
+              <Button asChild>
+                <a href="/auth/signup">新規登録</a>
+              </Button>
+            </div>
           )}
         </div>
       </header>
@@ -293,12 +217,14 @@ export default function RecipeApp() {
                   <p className="text-blue-700 text-sm">
                     アカウントを作成すると、お気に入りのレシピを保存できます
                   </p>
-                  <Button
-                    onClick={() => setShowAuthDialog(true)}
-                    className="mt-4"
-                  >
-                    ログイン・新規登録
-                  </Button>
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="outline" asChild>
+                      <a href="/auth/signin">ログイン</a>
+                    </Button>
+                    <Button asChild>
+                      <a href="/auth/signup">新規登録</a>
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -329,47 +255,24 @@ export default function RecipeApp() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* 食材追加方法の切り替え */}
-                  <Tabs defaultValue="text" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger
-                        value="text"
-                        className="flex items-center gap-2"
+                  <div className="space-y-4">
+                    {/* 既存のテキスト入力 */}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="食材名を入力..."
+                        value={newIngredient}
+                        onChange={(e) => setNewIngredient(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={addIngredient}
+                        disabled={!newIngredient.trim()}
                       >
-                        <Type className="h-4 w-4" />
-                        テキスト入力
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="image"
-                        className="flex items-center gap-2"
-                      >
-                        <Camera className="h-4 w-4" />
-                        画像から追加
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="text" className="space-y-4">
-                      {/* 既存のテキスト入力 */}
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="食材名を入力..."
-                          value={newIngredient}
-                          onChange={(e) => setNewIngredient(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          className="flex-1"
-                        />
-                        <Button
-                          onClick={addIngredient}
-                          disabled={!newIngredient.trim()}
-                        >
-                          追加
-                        </Button>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="image" className="space-y-4">
-                      <ImageUploadArea />
-                    </TabsContent>
-                  </Tabs>
+                        追加
+                      </Button>
+                    </div>
+                  </div>
 
                   {/* 食材一覧は既存のまま */}
                   <div className="space-y-2">
