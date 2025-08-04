@@ -1,48 +1,80 @@
 "use client";
+
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import { useToast } from "@repo/ui/hooks/use-toast";
 
 export default function SignIn() {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      setIsLoading(false);
+      return;
+    }
 
-    if (result?.error) {
-      setError("Invalid email or password");
-    } else {
-      router.push("/"); // ログイン成功後にリダイレクト
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.success("Signed in successfully");
+        router.push("/"); // ログイン成功後にリダイレクト
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      toast.error("Network error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div>
-      <h1>Sign In</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-8">
         <div>
-          <label>Email</label>
-          <Input type="email" name="email" required />
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
+            Sign in
+          </h2>
         </div>
-        <div>
-          <label>Password</label>
-          <Input type="password" name="password" required />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <Button type="submit">Sign In</Button>
-      </form>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <Input
+              type="email"
+              name="email"
+              placeholder="メールアドレス"
+              required
+            />
+            <Input
+              type="password"
+              name="password"
+              placeholder="パスワード"
+              required
+            />
+          </div>
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? "Signing in..." : "サインイン"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
