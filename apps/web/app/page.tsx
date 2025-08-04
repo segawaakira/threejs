@@ -148,7 +148,7 @@ export default function RecipeApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen">
       {/* ヘッダー */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -171,10 +171,9 @@ export default function RecipeApp() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
+                <p className="text-xs text-gray-500 p-4">
+                  {session?.user?.email}
+                </p>
                 <DropdownMenuSeparator />
                 {/* <DropdownMenuItem>
                   <BookOpen className="h-4 w-4 mr-2" />
