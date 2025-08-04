@@ -4,6 +4,7 @@ import "@repo/ui/globals.css";
 import { ThemeProvider } from "@repo/ui/providers/theme-provider";
 import { Toaster } from "@repo/ui/components/sonner";
 import { AppProviders } from "./providers";
+import { AuthGuard } from "@/components/auth-guard";
 
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   description: "Turbo-nest-prisma starter kit",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -38,7 +39,9 @@ export default function RootLayout({
           disableTransitionOnChange
           enableColorScheme
         >
-          <AppProviders>{children}</AppProviders>
+          <AppProviders>
+            <AuthGuard>{children}</AuthGuard>
+          </AppProviders>
           <Toaster richColors />
         </ThemeProvider>
       </body>

@@ -37,7 +37,7 @@ export default function SignIn() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Signed in successfully");
-        router.push("/"); // ログイン成功後にリダイレクト
+        // AuthGuardが自動的にリダイレクトするので、ここでは何もしない
       }
     } catch (error) {
       console.error("Sign in error:", error);
