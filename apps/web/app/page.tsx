@@ -2,9 +2,10 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
+import ReactMarkdown from "react-markdown";
 import {
   Card,
   CardContent,
@@ -34,26 +35,59 @@ import HelloWorld from "components/hello-world";
 export default function RecipeApp() {
   const { data: session } = useSession();
   const { toast } = useToast();
-  const [ingredients, setIngredients] = useState<string[]>([
-    "鶏肉",
-    "玉ねぎ",
-    "人参",
-    "じゃがいも",
-    "醤油",
-    "みりん",
-  ]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
   const [newIngredient, setNewIngredient] = useState("");
+  const [isFetchedIngredients, setIsFetchedIngredients] = useState(false);
+
   const [recipe, setRecipe] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // デモ用にtrueに設定
-  const [user, setUser] = useState({
-    name: "田中太郎",
-    email: "tanaka@example.com",
-    avatar: "",
-  });
   const [savedRecipes, setSavedRecipes] = useState<string[]>([]);
 
-  const addIngredient = () => {
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const fetchIngredients = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/ingredient-sets?userId=${session?.user?.id}`
+        );
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setIngredients(data[0].ingredients);
+        }
+      } catch (error) {
+        console.error("Failed to fetch ingredients:", error);
+      } finally {
+        setIsFetchedIngredients(true);
+      }
+    };
+
+    fetchIngredients();
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id || !isFetchedIngredients) return;
+    const updateIngredients = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/ingredient-sets/${session?.user?.id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              // userId: 6,
+              ingredients: ingredients,
+            }),
+          }
+        );
+      } catch (error) {
+        console.error("Failed to fetch ingredients:", error);
+      }
+    };
+
+    updateIngredients();
+  }, [ingredients, session?.user?.id, isFetchedIngredients]);
+
+  const addIngredient = async () => {
     if (newIngredient.trim() && !ingredients.includes(newIngredient.trim())) {
       setIngredients([...ingredients, newIngredient.trim()]);
       setNewIngredient("");
@@ -69,23 +103,24 @@ export default function RecipeApp() {
 
     setIsGenerating(true);
     setRecipe("");
+    try {
+      const response = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ingredients: ingredients,
+        }),
+      });
 
-    //     try {
-    //       const { text } = await generateText({
-    //         model: openai("gpt-4o"),
-    //         prompt: `以下の食材を使って、美味しいレシピを1つ提案してください。レシピには料理名、材料、作り方を含めてください。
-
-    // 利用可能な食材: ${ingredients.join("、")}
-
-    // レシピは日本語で、分かりやすく詳細に説明してください。`,
-    //       })
-
-    //       setRecipe(text)
-    //     } catch (error) {
-    //       setRecipe("レシピの生成中にエラーが発生しました。もう一度お試しください。")
-    //     } finally {
-    //       setIsGenerating(false)
-    //     }
+      const data = await response.json();
+      setRecipe(data.recipe);
+    } catch (error) {
+      setRecipe(
+        "レシピの生成中にエラーが発生しました。もう一度お試しください。"
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const saveRecipe = () => {
@@ -95,8 +130,6 @@ export default function RecipeApp() {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUser({ name: "", email: "", avatar: "" });
     setSavedRecipes([]);
     signOut();
   };
@@ -159,7 +192,7 @@ export default function RecipeApp() {
             </h1>
           </div>
 
-          {isLoggedIn ? (
+          {session?.user?.id ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -205,7 +238,7 @@ export default function RecipeApp() {
 
       <div className="p-4">
         <div className="max-w-4xl mx-auto space-y-6">
-          {!isLoggedIn && (
+          {!session?.user?.id && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="pt-6">
                 <div className="text-center space-y-2">
@@ -343,9 +376,7 @@ export default function RecipeApp() {
                 <CardContent>
                   {recipe ? (
                     <div className="prose prose-sm max-w-none">
-                      <div className="bg-white p-4 rounded-lg border whitespace-pre-wrap">
-                        {recipe}
-                      </div>
+                      <ReactMarkdown>{recipe}</ReactMarkdown>
                     </div>
                   ) : (
                     <div className="text-center py-12 text-gray-500">
@@ -354,7 +385,7 @@ export default function RecipeApp() {
                       <p>おすすめレシピを生成してください</p>
                     </div>
                   )}
-                  {recipe && isLoggedIn && (
+                  {recipe && session?.user?.id && (
                     <div className="mt-4 pt-4 border-t">
                       <Button
                         onClick={saveRecipe}
