@@ -23,14 +23,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/ui/components/dialog";
 
 import { User, LogOut, UserX, Heart } from "lucide-react";
 import { Camera, Type } from "lucide-react";
 import { ImageUploadArea } from "components/image-upload-area";
 import { signOut, useSession } from "next-auth/react";
 import { useToast } from "@repo/ui/hooks/use-toast";
-
-import HelloWorld from "components/hello-world";
 
 export default function RecipeApp() {
   const { data: session } = useSession();
@@ -42,6 +48,10 @@ export default function RecipeApp() {
   const [recipe, setRecipe] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [savedRecipes, setSavedRecipes] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showIngredientDeleteConfirm, setShowIngredientDeleteConfirm] =
+    useState(false);
+  const [ingredientToDelete, setIngredientToDelete] = useState<string>("");
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -87,15 +97,15 @@ export default function RecipeApp() {
     updateIngredients();
   }, [ingredients, session?.user?.id, isFetchedIngredients]);
 
-  const addIngredient = async () => {
+  const addIngredient = () => {
     if (newIngredient.trim() && !ingredients.includes(newIngredient.trim())) {
       setIngredients([...ingredients, newIngredient.trim()]);
       setNewIngredient("");
     }
   };
 
-  const removeIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+  const removeIngredient = (ingredient: string) => {
+    setIngredients(ingredients.filter((i) => i !== ingredient));
   };
 
   const generateRecipe = async () => {
@@ -149,29 +159,34 @@ export default function RecipeApp() {
       return;
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: session.user.id,
-      }),
-    });
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: session.user.id,
+        }),
+      });
 
-    if (!response.ok) {
-      toast.error("Failed to delete user");
-      console.log(response);
-      return;
+      if (!response.ok) {
+        toast.error("Failed to delete user");
+        console.log(response);
+        return;
+      }
+
+      await response.json();
+      toast.success("Account deleted successfully", {
+        description: "Your account has been permanently deleted",
+      });
+
+      // セッションを無効化してログインページにリダイレクト
+      await signOut({ callbackUrl: "/auth/signin" });
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast.error("Network error occurred");
     }
-
-    await response.json();
-    toast.success("Account deleted successfully", {
-      description: "Your account has been permanently deleted",
-    });
-
-    // セッションを無効化してログインページにリダイレクト
-    await signOut({ callbackUrl: "/auth/signin" });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -217,7 +232,10 @@ export default function RecipeApp() {
                   ログアウト
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDeleteAccount} className="">
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-600"
+                >
                   <UserX className="h-4 w-4 mr-2" />
                   退会する
                 </DropdownMenuItem>
@@ -328,7 +346,10 @@ export default function RecipeApp() {
                               variant="ghost"
                               size="sm"
                               className="h-4 w-4 p-0 hover:bg-red-100"
-                              onClick={() => removeIngredient(index)}
+                              onClick={() => {
+                                setIngredientToDelete(ingredient);
+                                setShowIngredientDeleteConfirm(true);
+                              }}
                             >
                               <Trash2 className="h-3 w-3 text-red-500" />
                             </Button>
@@ -385,7 +406,7 @@ export default function RecipeApp() {
                       <p>おすすめレシピを生成してください</p>
                     </div>
                   )}
-                  {recipe && session?.user?.id && (
+                  {/* {recipe && session?.user?.id && (
                     <div className="mt-4 pt-4 border-t">
                       <Button
                         onClick={saveRecipe}
@@ -401,14 +422,86 @@ export default function RecipeApp() {
                           : "レシピを保存"}
                       </Button>
                     </div>
-                  )}
+                  )} */}
                 </CardContent>
               </Card>
             </div>
           </div>
         </div>
       </div>
-      <HelloWorld />
+
+      {/* アカウント削除確認ダイアログ */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">
+              アカウント削除の確認
+            </DialogTitle>
+            <DialogDescription>
+              本当にアカウントを削除しますか？この操作は取り消せません。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                キャンセル
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  handleDeleteAccount();
+                  setShowDeleteConfirm(false);
+                }}
+              >
+                削除する
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 食材削除確認ダイアログ */}
+      <Dialog
+        open={showIngredientDeleteConfirm}
+        onOpenChange={setShowIngredientDeleteConfirm}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">食材削除の確認</DialogTitle>
+            <DialogDescription>
+              本当に「{ingredientToDelete}」を削除しますか？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowIngredientDeleteConfirm(false);
+                  setIngredientToDelete("");
+                }}
+              >
+                キャンセル
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setIngredients(
+                    ingredients.filter((i) => i !== ingredientToDelete)
+                  );
+                  setShowIngredientDeleteConfirm(false);
+                  setIngredientToDelete("");
+                }}
+              >
+                削除する
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
