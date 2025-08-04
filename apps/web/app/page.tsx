@@ -16,11 +16,6 @@ import { Badge } from "@repo/ui/components/badge";
 import { Separator } from "@repo/ui/components/separator";
 import { Trash2, Plus, ChefHat, Loader2 } from "lucide-react";
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@repo/ui/components/avatar";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -42,12 +37,17 @@ import {
   TabsTrigger,
 } from "@repo/ui/components/tabs";
 import { Label } from "@repo/ui/components/label";
-import { User, LogOut, Settings, BookOpen, Heart } from "lucide-react";
+import { User, LogOut, UserX, Heart } from "lucide-react";
 import { Camera, Type } from "lucide-react";
 import { ImageUploadArea } from "components/image-upload-area";
-import { useSession, signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { useToast } from "@repo/ui/hooks/use-toast";
+
+import HelloWorld from "components/hello-world";
 
 export default function RecipeApp() {
+  const { data: session } = useSession();
+  const { toast } = useToast();
   const [ingredients, setIngredients] = useState<string[]>([
     "鶏肉",
     "玉ねぎ",
@@ -116,6 +116,46 @@ export default function RecipeApp() {
     signOut();
   };
 
+  const handleDeleteAccount = async () => {
+    if (!session?.user?.id) {
+      toast.error("User session not found");
+      return;
+    }
+
+    // 削除前の確認
+    const confirmed = window.confirm(
+      "本当にアカウントを削除しますか？この操作は取り消せません。"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: session.user.id,
+      }),
+    });
+
+    if (!response.ok) {
+      toast.error("Failed to delete user");
+      console.log(response);
+      return;
+    }
+
+    await response.json();
+    toast.success("Account deleted successfully", {
+      description: "Your account has been permanently deleted",
+    });
+
+    // セッションを無効化してログインページにリダイレクト
+    await signOut({ callbackUrl: "/auth/signin" });
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addIngredient();
@@ -141,11 +181,8 @@ export default function RecipeApp() {
                   variant="ghost"
                   className="flex items-center gap-2 px-3"
                 >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} />
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span className="hidden sm:inline">{user.name}</span>
+                  <User className="h-8 w-8 text-orange-600" />
+                  {/* <span className="hidden sm:inline">{user.name}</span> */}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -154,25 +191,18 @@ export default function RecipeApp() {
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="h-4 w-4 mr-2" />
-                  プロフィール
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                   <BookOpen className="h-4 w-4 mr-2" />
                   保存したレシピ ({savedRecipes.length})
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="h-4 w-4 mr-2" />
-                  設定
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="text-red-600"
-                >
+                </DropdownMenuItem> */}
+                <DropdownMenuItem onClick={handleLogout} className="">
                   <LogOut className="h-4 w-4 mr-2" />
                   ログアウト
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDeleteAccount} className="">
+                  <UserX className="h-4 w-4 mr-2" />
+                  退会する
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -445,6 +475,7 @@ export default function RecipeApp() {
           </div>
         </div>
       </div>
+      <HelloWorld />
     </div>
   );
 }
