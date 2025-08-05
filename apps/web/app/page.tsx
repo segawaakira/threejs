@@ -196,7 +196,7 @@ export default function RecipeApp() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       {/* ヘッダー */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -219,7 +219,7 @@ export default function RecipeApp() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <p className="text-xs text-gray-500 p-4">
+                <p className="text-xs text-gray-500 p-4 break-all">
                   {session?.user?.email}
                 </p>
                 <DropdownMenuSeparator />
@@ -234,7 +234,7 @@ export default function RecipeApp() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="text-red-600"
+                  className=""
                 >
                   <UserX className="h-4 w-4 mr-2" />
                   退会する
